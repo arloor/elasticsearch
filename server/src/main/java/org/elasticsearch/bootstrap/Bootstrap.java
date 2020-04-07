@@ -50,6 +50,7 @@ import org.elasticsearch.node.EmbeddedNode;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.InternalSettingsPreparer;
+import org.elasticsearch.plugin.PositionSimilarityPlugin;
 import org.plugin.ExampleRescorePlugin;
 
 import java.io.ByteArrayOutputStream;
@@ -227,7 +228,7 @@ final class Bootstrap {
 //            }
 //        };
         Collection plugins = new ArrayList<>();
-        Collections.addAll(plugins,   ExampleRescorePlugin.class);//, ,AnalysisMMsegPlugin.class
+        Collections.addAll(plugins,   PositionSimilarityPlugin.class);//, ,AnalysisMMsegPlugin.class
         node = new EmbeddedNode(environment,  plugins) {
             @Override
             protected void validateNodeBeforeAcceptingRequests(
