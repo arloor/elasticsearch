@@ -230,6 +230,13 @@ final class Bootstrap {
         Collections.addAll(plugins,   ExampleRescorePlugin.class);//, ,AnalysisMMsegPlugin.class
         node = new EmbeddedNode(environment,  plugins) {
             @Override
+            protected void validateNodeBeforeAcceptingRequests(
+                final BootstrapContext context,
+                final BoundTransportAddress boundTransportAddress, List<BootstrapCheck> checks) throws NodeValidationException {
+                BootstrapChecks.check(context, boundTransportAddress, checks);
+            }
+
+            @Override
             protected void registerDerivedNodeNameWithLogger(String nodeName) {
                 LogConfigurator.setNodeName(nodeName);
             }
