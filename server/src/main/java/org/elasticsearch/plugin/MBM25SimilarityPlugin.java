@@ -19,7 +19,7 @@ import org.elasticsearch.index.IndexModule;
 import org.elasticsearch.plugins.Plugin;
 
 
-public class PositionSimilarityPlugin extends Plugin {
+public class MBM25SimilarityPlugin extends Plugin {
     public String name() {
         return "elasticsearch-position-similarity";
     }

@@ -46,12 +46,10 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.monitor.jvm.JvmInfo;
 import org.elasticsearch.monitor.os.OsProbe;
 import org.elasticsearch.monitor.process.ProcessProbe;
-import org.elasticsearch.node.EmbeddedNode;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.InternalSettingsPreparer;
-import org.elasticsearch.plugin.PositionSimilarityPlugin;
-import org.plugin.ExampleRescorePlugin;
+import org.elasticsearch.plugin.MBM25SimilarityPlugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -214,22 +212,9 @@ final class Bootstrap {
             throw new BootstrapException(e);
         }
 
-//        node = new Node(environment) {
-//            @Override
-//            protected void validateNodeBeforeAcceptingRequests(
-//                final BootstrapContext context,
-//                final BoundTransportAddress boundTransportAddress, List<BootstrapCheck> checks) throws NodeValidationException {
-//                BootstrapChecks.check(context, boundTransportAddress, checks);
-//            }
-//
-//            @Override
-//            protected void registerDerivedNodeNameWithLogger(String nodeName) {
-//                LogConfigurator.setNodeName(nodeName);
-//            }
-//        };
         Collection plugins = new ArrayList<>();
-        Collections.addAll(plugins,   PositionSimilarityPlugin.class);//, ,AnalysisMMsegPlugin.class
-        node = new EmbeddedNode(environment,  plugins) {
+        Collections.addAll(plugins,   MBM25SimilarityPlugin.class);//, ,AnalysisMMsegPlugin.class
+        node = new Node(environment,plugins) {
             @Override
             protected void validateNodeBeforeAcceptingRequests(
                 final BootstrapContext context,

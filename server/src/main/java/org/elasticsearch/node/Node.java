@@ -265,6 +265,10 @@ public abstract class Node implements Closeable {
         this(environment, Collections.emptyList(), true);
     }
 
+    public Node(Environment environment,Collection<Class<? extends Plugin>> classpathPlugins) {
+        this(environment, classpathPlugins, true);
+    }
+
     /**
      * Constructs a node
      *
