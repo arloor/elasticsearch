@@ -46,9 +46,11 @@ import org.elasticsearch.env.Environment;
 import org.elasticsearch.monitor.jvm.JvmInfo;
 import org.elasticsearch.monitor.os.OsProbe;
 import org.elasticsearch.monitor.process.ProcessProbe;
+import org.elasticsearch.node.EmbeddedNode;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.InternalSettingsPreparer;
+import org.plugin.ExampleRescorePlugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -57,6 +59,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
@@ -209,14 +213,22 @@ final class Bootstrap {
             throw new BootstrapException(e);
         }
 
-        node = new Node(environment) {
-            @Override
-            protected void validateNodeBeforeAcceptingRequests(
-                final BootstrapContext context,
-                final BoundTransportAddress boundTransportAddress, List<BootstrapCheck> checks) throws NodeValidationException {
-                BootstrapChecks.check(context, boundTransportAddress, checks);
-            }
-
+//        node = new Node(environment) {
+//            @Override
+//            protected void validateNodeBeforeAcceptingRequests(
+//                final BootstrapContext context,
+//                final BoundTransportAddress boundTransportAddress, List<BootstrapCheck> checks) throws NodeValidationException {
+//                BootstrapChecks.check(context, boundTransportAddress, checks);
+//            }
+//
+//            @Override
+//            protected void registerDerivedNodeNameWithLogger(String nodeName) {
+//                LogConfigurator.setNodeName(nodeName);
+//            }
+//        };
+        Collection plugins = new ArrayList<>();
+        Collections.addAll(plugins,   ExampleRescorePlugin.class);//, ,AnalysisMMsegPlugin.class
+        node = new EmbeddedNode(environment,  plugins) {
             @Override
             protected void registerDerivedNodeNameWithLogger(String nodeName) {
                 LogConfigurator.setNodeName(nodeName);
