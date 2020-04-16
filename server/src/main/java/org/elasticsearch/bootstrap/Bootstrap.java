@@ -49,6 +49,7 @@ import org.elasticsearch.monitor.process.ProcessProbe;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.InternalSettingsPreparer;
+import org.elasticsearch.plugin.ExpertScriptPlugin;
 import org.elasticsearch.plugin.MBM25SimilarityPlugin;
 
 import java.io.ByteArrayOutputStream;
@@ -213,7 +214,7 @@ final class Bootstrap {
         }
 
         Collection plugins = new ArrayList<>();
-        Collections.addAll(plugins,   MBM25SimilarityPlugin.class);//, ,AnalysisMMsegPlugin.class
+        Collections.addAll(plugins,   MBM25SimilarityPlugin.class, ExpertScriptPlugin.class);//, ,AnalysisMMsegPlugin.class
         node = new Node(environment,plugins) {
             @Override
             protected void validateNodeBeforeAcceptingRequests(
