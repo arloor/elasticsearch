@@ -36,7 +36,9 @@ import org.elasticsearch.script.ScoreScript;
 import org.elasticsearch.script.ScoreScript.LeafFactory;
 import org.elasticsearch.script.ScriptContext;
 import org.elasticsearch.script.ScriptEngine;
+import org.elasticsearch.search.lookup.LeafDocLookup;
 import org.elasticsearch.search.lookup.SearchLookup;
+import org.elasticsearch.search.lookup.SourceLookup;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -107,6 +109,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                 this.lookup = lookup;
                 field = params.get("field").toString();
                 query = params.get("query").toString();
+
             }
 
             @Override
@@ -118,6 +121,9 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
             public ScoreScript newInstance(LeafReaderContext context)
                     throws IOException {
                 LeafReader reader = context.reader();
+//                LeafDocLookup doc = lookup.getLeafSearchLookup(context).doc();
+                SourceLookup source = lookup.getLeafSearchLookup(context).source();
+
 //                PostingsEnum postings = reader.postings(
 //                        new Term(field, term));
 //                PostingsEnum postings = reader.postings(
@@ -162,11 +168,20 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
 //                            return 0.0d;
 //                        }
                         try {
-                            //打印原文档
-                            Document document = reader.document(currentDocid);
-                            String doc=new String(document.getBinaryValue("_source").bytes);
-                            JSONObject jsonObject=JSONObject.parseObject(doc);
-                            String value=jsonObject.getString(field);
+//                            doc.setDocument(currentDocid);
+//                            System.out.println("doc包含body: "+doc.containsKey("body"));
+                            source.setSegmentAndDocument(context,currentDocid);
+                            String value="";
+                            if(source.containsKey(field)){
+                                value=String.valueOf(source.get(field));
+                            }else{
+                                return 0.0d;
+                            }
+//                            //打印原文档
+//                            Document document = reader.document(currentDocid);
+//                            String doc=new String(document.getBinaryValue("_source").bytes);
+//                            JSONObject jsonObject=JSONObject.parseObject(doc);
+//                            String value=jsonObject.getString(field);
                             logger.info(query+" / "+value);
 //                            System.out.println(currentDocid+" "+ doc);
                             //打印分出来的term
@@ -179,7 +194,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                                 }
                                 logger.info(Term.toString(next)+ " "+iterator.docFreq());
                             }
-                            return (double)query.length()/(query.length()+value.length());
+                            return value.contains(query)?1:0;
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
