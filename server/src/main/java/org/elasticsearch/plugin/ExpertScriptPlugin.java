@@ -66,6 +66,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
         @Override
         public <T> T compile(String scriptName, String scriptSource,
                 ScriptContext<T> context, Map<String, String> params) {
+            System.out.println(context);
             if (context.equals(ScoreScript.CONTEXT) == false) {
                 throw new IllegalArgumentException(getType()
                         + " scripts cannot be used for context ["
@@ -89,7 +90,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
             private final Map<String, Object> params;
             private final SearchLookup lookup;
             private final String field;
-            private final String term;
+            private final String query;
 
             private PureDfLeafFactory(
                         Map<String, Object> params, SearchLookup lookup) {
@@ -97,15 +98,15 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                     throw new IllegalArgumentException(
                             "Missing parameter [field]");
                 }
-                if (params.containsKey("term") == false) {
+                if (params.containsKey("query") == false) {
                     throw new IllegalArgumentException(
-                            "Missing parameter [term]");
+                            "Missing parameter [query]");
                 }
 
                 this.params = params;
                 this.lookup = lookup;
                 field = params.get("field").toString();
-                term = params.get("term").toString();
+                query = params.get("query").toString();
             }
 
             @Override
@@ -117,20 +118,22 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
             public ScoreScript newInstance(LeafReaderContext context)
                     throws IOException {
                 LeafReader reader = context.reader();
-                PostingsEnum postings = reader.postings(
-                        new Term(field, term));
-                if (postings == null) {
-                    /*
-                     * the field and/or term don't exist in this segment,
-                     * so always return 0
-                     */
-                    return new ScoreScript(params, lookup, context) {
-                        @Override
-                        public double execute() {
-                            return 0.0d;
-                        }
-                    };
-                }
+//                PostingsEnum postings = reader.postings(
+//                        new Term(field, term));
+//                PostingsEnum postings = reader.postings(
+//                        new Term(field, term));
+//                if (postings == null) {
+//                    /*
+//                     * the field and/or term don't exist in this segment,
+//                     * so always return 0
+//                     */
+//                    return new ScoreScript(params, lookup, context) {
+//                        @Override
+//                        public double execute() {
+//                            return 0.0d;
+//                        }
+//                    };
+//                }
                 return new ScoreScript(params, lookup, context) {
                     int currentDocid = -1;
                     @Override
@@ -139,32 +142,32 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                          * advance has undefined behavior calling with
                          * a docid <= its current docid
                          */
-                        if (postings.docID() < docid) {
-                            try {
-                                postings.advance(docid);
-                            } catch (IOException e) {
-                                throw new UncheckedIOException(e);
-                            }
-                        }
+//                        if (postings.docID() < docid) {
+//                            try {
+//                                postings.advance(docid);
+//                            } catch (IOException e) {
+//                                throw new UncheckedIOException(e);
+//                            }
+//                        }
                         currentDocid = docid;
                     }
                     @Override
                     public double execute() {
 
-                        if (postings.docID() != currentDocid) {
-                            /*
-                             * advance moved past the current doc, so this doc
-                             * has no occurrences of the term
-                             */
-                            return 0.0d;
-                        }
+//                        if (postings.docID() != currentDocid) {
+//                            /*
+//                             * advance moved past the current doc, so this doc
+//                             * has no occurrences of the term
+//                             */
+//                            return 0.0d;
+//                        }
                         try {
                             //打印原文档
                             Document document = reader.document(currentDocid);
                             String doc=new String(document.getBinaryValue("_source").bytes);
                             JSONObject jsonObject=JSONObject.parseObject(doc);
                             String value=jsonObject.getString(field);
-                            logger.info(term+" | "+value);
+                            logger.info(query+" / "+value);
 //                            System.out.println(currentDocid+" "+ doc);
                             //打印分出来的term
                             Terms terms = reader.terms(field);
@@ -174,9 +177,9 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                                 if (next==null){
                                     break;
                                 }
-//                                System.out.println(currentDocid+" "+new String(next.bytes)+ " "+iterator.docFreq());
+                                logger.info(Term.toString(next)+ " "+iterator.docFreq());
                             }
-                            return 1;
+                            return (double)query.length()/(query.length()+value.length());
                         } catch (IOException e) {
                             throw new UncheckedIOException(e);
                         }
