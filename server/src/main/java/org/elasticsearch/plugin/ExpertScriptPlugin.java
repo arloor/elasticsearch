@@ -121,55 +121,17 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
             public ScoreScript newInstance(LeafReaderContext context)
                     throws IOException {
                 LeafReader reader = context.reader();
-//                LeafDocLookup doc = lookup.getLeafSearchLookup(context).doc();
                 SourceLookup source = lookup.getLeafSearchLookup(context).source();
-
-//                PostingsEnum postings = reader.postings(
-//                        new Term(field, term));
-//                PostingsEnum postings = reader.postings(
-//                        new Term(field, term));
-//                if (postings == null) {
-//                    /*
-//                     * the field and/or term don't exist in this segment,
-//                     * so always return 0
-//                     */
-//                    return new ScoreScript(params, lookup, context) {
-//                        @Override
-//                        public double execute() {
-//                            return 0.0d;
-//                        }
-//                    };
-//                }
                 return new ScoreScript(params, lookup, context) {
                     int currentDocid = -1;
                     @Override
                     public void setDocument(int docid) {
-                        /*
-                         * advance has undefined behavior calling with
-                         * a docid <= its current docid
-                         */
-//                        if (postings.docID() < docid) {
-//                            try {
-//                                postings.advance(docid);
-//                            } catch (IOException e) {
-//                                throw new UncheckedIOException(e);
-//                            }
-//                        }
                         currentDocid = docid;
                     }
                     @Override
                     public double execute() {
 
-//                        if (postings.docID() != currentDocid) {
-//                            /*
-//                             * advance moved past the current doc, so this doc
-//                             * has no occurrences of the term
-//                             */
-//                            return 0.0d;
-//                        }
                         try {
-//                            doc.setDocument(currentDocid);
-//                            System.out.println("doc包含body: "+doc.containsKey("body"));
                             source.setSegmentAndDocument(context,currentDocid);
                             String value="";
                             if(source.containsKey(field)){
@@ -183,9 +145,8 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
 //                            JSONObject jsonObject=JSONObject.parseObject(doc);
 //                            String value=jsonObject.getString(field);
                             logger.info(query+" / "+value);
-//                            System.out.println(currentDocid+" "+ doc);
-                            //打印分出来的term
                             Terms terms = reader.terms(field);
+
                             TermsEnum iterator = terms.iterator();
                             for (int i = 0; i < terms.size(); i++) {
                                 BytesRef next = iterator.next();
