@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.ParseException;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,7 +58,9 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
         return new MyExpertScriptEngine();
     }
 
-    /** An example {@link ScriptEngine} that uses Lucene segment details to implement pure document frequency scoring. */
+    /**
+     * An example {@link ScriptEngine} that uses Lucene segment details to implement pure document frequency scoring.
+     */
     // tag::expert_engine
     private static class MyExpertScriptEngine implements ScriptEngine {
         @Override
@@ -67,12 +70,11 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
 
         @Override
         public <T> T compile(String scriptName, String scriptSource,
-                ScriptContext<T> context, Map<String, String> params) {
-            System.out.println(context);
+                             ScriptContext<T> context, Map<String, String> params) {
             if (context.equals(ScoreScript.CONTEXT) == false) {
                 throw new IllegalArgumentException(getType()
-                        + " scripts cannot be used for context ["
-                        + context.name + "]");
+                    + " scripts cannot be used for context ["
+                    + context.name + "]");
             }
             // we use the script "source" as the script identifier
             if ("pure_df".equals(scriptSource)) {
@@ -80,7 +82,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                 return context.factoryClazz.cast(factory);
             }
             throw new IllegalArgumentException("Unknown script name "
-                    + scriptSource);
+                + scriptSource);
         }
 
         @Override
@@ -91,74 +93,68 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
         private static class PureDfLeafFactory implements LeafFactory {
             private final Map<String, Object> params;
             private final SearchLookup lookup;
-            private final String field;
+            private final List<String> fields;
             private final String query;
 
             private PureDfLeafFactory(
-                        Map<String, Object> params, SearchLookup lookup) {
+                Map<String, Object> params, SearchLookup lookup) {
                 if (params.containsKey("field") == false) {
                     throw new IllegalArgumentException(
-                            "Missing parameter [field]");
+                        "Missing parameter [field]");
                 }
                 if (params.containsKey("query") == false) {
                     throw new IllegalArgumentException(
-                            "Missing parameter [query]");
+                        "Missing parameter [query]");
                 }
 
                 this.params = params;
                 this.lookup = lookup;
-                field = params.get("field").toString();
+                fields = (List<String>) params.get("field");
                 query = params.get("query").toString();
-
             }
 
             @Override
             public boolean needs_score() {
-                return false;  // Return true if the script needs the score
+                return true;  // Return true if the script needs the score
             }
 
             @Override
             public ScoreScript newInstance(LeafReaderContext context)
-                    throws IOException {
+                throws IOException {
                 LeafReader reader = context.reader();
                 SourceLookup source = lookup.getLeafSearchLookup(context).source();
+                LeafDocLookup doc = lookup.getLeafSearchLookup(context).doc();
                 return new ScoreScript(params, lookup, context) {
                     int currentDocid = -1;
+
                     @Override
                     public void setDocument(int docid) {
                         currentDocid = docid;
                     }
+
                     @Override
                     public double execute() {
-
-                        try {
-                            source.setSegmentAndDocument(context,currentDocid);
-                            String value="";
-                            if(source.containsKey(field)){
-                                value=String.valueOf(source.get(field));
-                            }else{
-                                return 0.0d;
+                        //获取原来的评分
+                        double rawScore = this.get_score();
+                        final double[] maxScore = {0.0};
+                        fields.forEach(fieldWeight -> {
+                            String[] split = fieldWeight.split("^");
+                            String field = split[0];
+                            double weight = split.length == 2 ? Double.parseDouble(split[1]) : 1;
+                            source.setSegmentAndDocument(context, currentDocid);
+                            String value = "";
+                            if (source.containsKey(field)) {
+                                value = String.valueOf(source.get(field));
+                            } else {
+                                return;
                             }
-//                            //打印原文档
-//                            Document document = reader.document(currentDocid);
-//                            String doc=new String(document.getBinaryValue("_source").bytes);
-//                            JSONObject jsonObject=JSONObject.parseObject(doc);
-//                            String value=jsonObject.getString(field);
-                            logger.info(query+" / "+value);
-                            Terms terms = reader.terms(field);
-
-                            TermsEnum iterator = terms.iterator();
-                            for (int i = 0; i < terms.size(); i++) {
-                                BytesRef next = iterator.next();
-                                if (next==null){
-                                    break;
-                                }
-                                logger.info(Term.toString(next)+ " "+iterator.docFreq());
+                            double horspool = Horspool.calHorspoolScoreWrapper(value, query);
+                            horspool = horspool * weight;
+                            if (horspool > maxScore[0]) {
+                                maxScore[0] = horspool;
                             }
-                            return value.contains(query)?1:0;
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(e);
-                        }
+                        });
+                        return maxScore[0];
                     }
                 };
             }
