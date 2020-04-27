@@ -214,7 +214,7 @@ final class Bootstrap {
         }
 
         Collection plugins = new ArrayList<>();
-        Collections.addAll(plugins,   MBM25SimilarityPlugin.class, ExpertScriptPlugin.class);//, ,AnalysisMMsegPlugin.class
+        Collections.addAll(plugins, ExpertScriptPlugin.class);//, ,AnalysisMMsegPlugin.class
         node = new Node(environment,plugins) {
             @Override
             protected void validateNodeBeforeAcceptingRequests(

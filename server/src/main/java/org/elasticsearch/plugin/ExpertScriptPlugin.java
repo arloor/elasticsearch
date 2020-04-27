@@ -77,7 +77,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                     + context.name + "]");
             }
             // we use the script "source" as the script identifier
-            if ("pure_df".equals(scriptSource)) {
+            if ("horspool".equals(scriptSource)) {
                 ScoreScript.Factory factory = PureDfLeafFactory::new;
                 return context.factoryClazz.cast(factory);
             }
