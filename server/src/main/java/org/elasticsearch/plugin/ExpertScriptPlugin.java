@@ -138,7 +138,7 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                         double rawScore = this.get_score();
                         final double[] maxScore = {0.0};
                         fields.forEach(fieldWeight -> {
-                            String[] split = fieldWeight.split("^");
+                            String[] split = fieldWeight.split("\\^");
                             String field = split[0];
                             double weight = split.length == 2 ? Double.parseDouble(split[1]) : 1;
                             source.setSegmentAndDocument(context, currentDocid);
