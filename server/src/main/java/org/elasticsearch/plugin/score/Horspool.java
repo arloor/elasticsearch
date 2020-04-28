@@ -1,4 +1,4 @@
-package org.elasticsearch.plugin;
+package org.elasticsearch.plugin.score;
 
 import java.util.HashMap;
 import java.util.Map;

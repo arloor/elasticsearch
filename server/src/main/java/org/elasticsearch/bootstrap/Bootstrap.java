@@ -49,8 +49,7 @@ import org.elasticsearch.monitor.process.ProcessProbe;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.node.InternalSettingsPreparer;
-import org.elasticsearch.plugin.ExpertScriptPlugin;
-import org.elasticsearch.plugin.MBM25SimilarityPlugin;
+import org.elasticsearch.plugin.score.ExpertScriptPlugin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
