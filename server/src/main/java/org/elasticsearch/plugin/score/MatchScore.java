@@ -1,11 +1,15 @@
 package org.elasticsearch.plugin.score;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MatchScore {
+    protected static final Logger logger = LogManager.getLogger(MatchScore.class);
 
     private static final int weight = 2;
 
@@ -51,29 +55,30 @@ public class MatchScore {
             } else {
                 int maxLength = 0;
                 int maxUnmatch = -1;
-                String maxLengthPhase = "";
+//                String maxLengthPhase = "";
                 for (int i = 0; i < queryIndexs.size(); i++) {
                     int queryIndex = queryIndexs.get(i);
                     int firstUnmatch = findFirstUnmatch(j, values, queryIndex, matchsMetaInfo.getQueryChars());
                     int length = firstUnmatch - j;
-                    String phase = value.substring(j, firstUnmatch);
+//                    String phase = value.substring(j, firstUnmatch);
                     // 打印每个phase
-                    System.out.println(j + " " + length + " " + phase);
+//                    System.out.println(j + " " + length + " " + phase);
                     if (length > maxLength) {
                         maxLength = length;
-                        maxLengthPhase = phase;
+//                        maxLengthPhase = phase;
                     }
                     if (firstUnmatch > maxUnmatch) {
                         maxUnmatch = firstUnmatch;
                     }
                 }
                 // 打印最长的phase
-                System.out.println("==max" + " " + maxLengthPhase);
+//                System.out.println("==max" + " " + maxLengthPhase);
                 matchScore += Math.pow(weight, maxLength);
                 j = maxUnmatch;
                 continue;
             }
         }
+        logger.info("term_score: "+matchScore);
         return matchScore;
     }
 

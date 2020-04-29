@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 public class TermScore {
-    protected static final Logger logger = LogManager.getLogger(ExpertScriptPlugin.class);
+    protected static final Logger logger = LogManager.getLogger(TermScore.class);
     private static final int weight = 2;
 
     public static void main(String[] args) {
@@ -30,14 +30,14 @@ public class TermScore {
     /**
      * 模式串： query
      * 匹配串: value
-     * 1. 预处理，生成模式串的char，indexList映射
-     * 2. 对匹配串的每一个char{
-     * getIndexList(char);获取模式串中indexList
+     * 1. 预处理: 使用standard分词找到terms，生成模式串的term，indexList映射
+     * 2. 对匹配串的每一个term{
+     * getIndexList(term);获取模式串中indexList
      * 对indexList中的每个index{
      * 执行匹配，直到不匹配的时候，获得一个phase
      * }
-     * 比较这些phase的长度，得到匹配串该char开头的最长phase
-     * continue：从匹配串最长匹配的下一char继续(这么做是为了避免重复积分和提升效率)
+     * 比较这些phase的个数，得到匹配串该term开头的最长phase
+     * continue：从匹配串最长匹配的下一term继续(这么做是为了避免重复积分和提升效率)
      * }
      *
      * @param value  aa
@@ -51,7 +51,7 @@ public class TermScore {
     }
 
     private static long score(String value, TermsMetaInfo queryMetaInfo) {
-        long matchScore = 0;
+        long termScore = 0;
         // 将value串转换为index表
 
         StringReader reader = new StringReader(value);
@@ -84,35 +84,35 @@ public class TermScore {
             } else {
                 int maxLength = 0;
                 int maxUnmatch = -1;
-                String maxLengthPhase = "";
+//                String maxLengthPhase = "";
                 for (int i = 0; i < queryIndexs.size(); i++) {
                     int queryIndex = queryIndexs.get(i);
                     int firstUnmatch = findFirstUnmatch(j, terms, queryIndex, queryMetaInfo.terms);
                     int length = firstUnmatch - j;
 
-                    String phase = "";
-                    for (int k = j; k < firstUnmatch; k++) {
-                        phase += terms.get(k) + "^";
-                    }
+//                    String phase = "";
+//                    for (int k = j; k < firstUnmatch; k++) {
+//                        phase += terms.get(k) + "^";
+//                    }
                     // 打印每个phase
-                    System.out.println(j + " " + length + " " + phase);
+//                    System.out.println(j + " " + length + " " + phase);
                     if (length > maxLength) {
                         maxLength = length;
-                        maxLengthPhase = phase;
+//                        maxLengthPhase = phase;
                     }
                     if (firstUnmatch > maxUnmatch) {
                         maxUnmatch = firstUnmatch;
                     }
                 }
                 // 打印最长的phase
-                System.out.println("==max" + " " + maxLengthPhase);
-                matchScore += Math.pow(weight, maxLength);
+//                System.out.println("==max" + " " + maxLengthPhase);
+                termScore += Math.pow(weight, maxLength);
                 j = maxUnmatch;
                 continue;
             }
         }
-        logger.info("score: ", matchScore);
-        return matchScore;
+        logger.info("term_score: "+ termScore);
+        return termScore;
     }
 
     private static int findFirstUnmatch(int valueIndex, List<String> valueTerms, int queryindex, List<String> queryTerms) {
