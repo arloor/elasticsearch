@@ -17,6 +17,7 @@ import org.elasticsearch.search.lookup.SourceLookup;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,15 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
      */
     // tag::expert_engine
     private static class MyExpertScriptEngine implements ScriptEngine {
+
+        private static final Map<String, ScoreScript.Factory> factoryLookUp = new HashMap<>();
+
+        static {
+            factoryLookUp.put("horspool", HorspoolLeafFactory::new);
+            factoryLookUp.put("match_score", MatchScoreLeafFactory::new);
+            factoryLookUp.put("term_score", TermScoreLeafFactory::new);
+        }
+
         @Override
         public String getType() {
             return "expert_scripts";
@@ -49,21 +59,10 @@ public class ExpertScriptPlugin extends Plugin implements ScriptPlugin {
                     + " scripts cannot be used for context ["
                     + context.name + "]");
             }
-            // we use the script "source" as the script identifier
-            if ("horspool".equals(scriptSource)) {
-                ScoreScript.Factory factory = HorspoolLeafFactory::new;
+            ScoreScript.Factory factory = factoryLookUp.get(scriptSource);
+            if (factory != null) {
                 return context.factoryClazz.cast(factory);
             }
-            if ("match_score".equals(scriptSource)) {
-                ScoreScript.Factory factory = MatchScoreLeafFactory::new;
-                return context.factoryClazz.cast(factory);
-            }
-
-            if ("term_score".equals(scriptSource)) {
-                ScoreScript.Factory factory = TermScoreLeafFactory::new;
-                return context.factoryClazz.cast(factory);
-            }
-
             throw new IllegalArgumentException("Unknown script name "
                 + scriptSource);
         }

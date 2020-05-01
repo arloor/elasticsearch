@@ -9,9 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 public class MatchScore {
-    protected static final Logger logger = LogManager.getLogger(MatchScore.class);
 
-    private static final int weight = 2;
+    private static final int weight = 4;
 
     public static void main(String[] args) {
         String query = "有重复字符串哈哈哈的重复测试串";
@@ -78,7 +77,6 @@ public class MatchScore {
                 continue;
             }
         }
-        logger.info("term_score: "+matchScore);
         return matchScore;
     }
 
