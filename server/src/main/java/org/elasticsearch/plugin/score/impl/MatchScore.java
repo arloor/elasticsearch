@@ -1,7 +1,4 @@
-package org.elasticsearch.plugin.score;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+package org.elasticsearch.plugin.score.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,9 +30,9 @@ public class MatchScore {
      * continue：从匹配串最长匹配的下一char继续(这么做是为了避免重复积分和提升效率)
      * }
      *
-     * @param value aaa
+     * @param value          aaa
      * @param matchsMetaInfo aa
-     * @return  aaaa
+     * @return aaaa
      */
     public static long scoreWrapper(String value, MatchsMetaInfo matchsMetaInfo) {
         value = value.toLowerCase();
