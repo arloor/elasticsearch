@@ -47,7 +47,6 @@ public class HorspoolFactory extends ScoreLeafFactory {
                         return;
                     }
                     double score = Horspool.calHorspoolScoreWrapper(value, query);
-//                            double score=MatchScore.scoreWrapper(value,query);
                     score = score * weight;
                     if (score > maxScore[0]) {
                         maxScore[0] = score;
